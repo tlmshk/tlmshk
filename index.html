@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="der die das">
+<title>der · die · das</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --bg2:#15161c; --ink:#ece9e2; --muted:#8a8a96;
+    --line:rgba(255,255,255,.08); --amber:#d7a25a;
+    --green:#5fae73; --green-bg:rgba(95,174,115,.16);
+    --red:#cf6a64; --red-bg:rgba(207,106,100,.16);
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+    --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--sans);color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% 120%, rgba(215,162,90,.10), transparent 60%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    background-attachment:fixed;overflow:hidden;-webkit-user-select:none;user-select:none;
+  }
+  .app{height:100dvh;height:100vh;display:flex;flex-direction:column;
+    padding:max(10px,env(safe-area-inset-top)) 16px max(12px,env(safe-area-inset-bottom)) 16px;
+    max-width:560px;margin:0 auto;}
+
+  .top{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .brand{font-family:var(--serif);font-weight:500;font-size:14px;letter-spacing:.06em;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex-shrink:1;}
+  .brand b{color:var(--ink);font-weight:600;}
+  .stats{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted);flex:0 0 auto;}
+  .stat b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;}
+  .iconbtn{background:none;border:1px solid var(--line);color:var(--muted);width:28px;height:28px;
+    border-radius:9px;font-size:13px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .iconbtn:active{transform:scale(.92);}
+  .iconbtn.on{color:var(--amber);border-color:rgba(215,162,90,.5);background:rgba(215,162,90,.12);}
+  .bar{height:3px;border-radius:3px;background:var(--line);margin-top:9px;overflow:hidden;flex:0 0 auto;}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amber),#e8c98f);transition:width .5s ease;}
+
+  .stage{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:0;gap:6px;padding:4px 0;}
+  .hint{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);}
+  .word{font-family:var(--serif);font-weight:400;line-height:1.04;letter-spacing:-.01em;
+    font-size:clamp(30px,9.5vw,58px);padding:2px 4px;max-width:100%;
+    overflow-wrap:break-word;hyphens:auto;}
+  .word b{font-weight:700;}
+  .word.in{animation:rise .32s cubic-bezier(.2,.7,.2,1);}
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .ipa{font-size:clamp(13px,3.6vw,16px);color:var(--amber);letter-spacing:.01em;opacity:.85;font-weight:500;}
+  .feedback{font-size:13.5px;min-height:20px;color:var(--muted);font-weight:500;}
+  .feedback .ok{color:var(--green);} .feedback .no{color:var(--red);}
+  .feedback .sol{font-family:var(--serif);color:var(--ink);}
+  .feedback .tap{color:var(--muted);font-weight:500;}
+  .rule{font-size:12.5px;color:var(--amber);opacity:.92;min-height:15px;max-width:94%;line-height:1.4;}
+
+  .result{flex:0 0 auto;min-height:46px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:4px;text-align:center;padding:6px 8px;}
+
+  .choices{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .choice{font-family:var(--serif);font-size:clamp(19px,6vw,26px);font-weight:500;color:var(--ink);
+    background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;
+    padding:clamp(14px,4vh,24px) 4px;cursor:pointer;transition:transform .1s, background .15s, border-color .15s;}
+  .choice:active{transform:scale(.96);}
+  .choice:disabled{cursor:default;}
+  .choice.correct{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+  .choice.wrong{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+  .choice.dim{opacity:.35;}
+
+  .toolbar{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:10px;}
+  .toolbtn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:13px;padding:8px 4px;
+    cursor:pointer;color:var(--muted);transition:.15s;}
+  .toolbtn:active{transform:scale(.96);}
+  .toolbtn.on{color:var(--amber);border-color:rgba(215,162,90,.5);background:rgba(215,162,90,.1);}
+  .toolbtn .ti{font-size:17px;line-height:1;position:relative;}
+  .toolbtn .tl{font-size:10.5px;font-weight:600;letter-spacing:.02em;}
+
+  .overlay{position:fixed;inset:0;background:rgba(8,8,11,.72);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;padding:24px;z-index:5;}
+  .overlay.show{display:flex;}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:320px;width:100%;text-align:center;}
+  .card p{color:var(--muted);font-size:14px;margin:6px 0 18px;line-height:1.5;}
+  .card h3{font-family:var(--serif);font-weight:600;font-size:19px;}
+  .row{display:flex;gap:10px;}
+  .row button{flex:1;padding:12px;border-radius:12px;font-family:var(--sans);font-weight:600;font-size:14px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);}
+  .row button.danger{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+
+  /* problem-list badge on the icon button */
+  .iconbtn{position:relative;}
+  .badge{position:absolute;top:-6px;right:-6px;display:none;align-items:center;justify-content:center;
+    min-width:16px;height:16px;padding:0 4px;font-size:10px;font-weight:700;color:#1a1208;
+    background:var(--amber);border-radius:999px;}
+
+  /* problem-list panel */
+  .listoverlay{align-items:flex-end;}
+  @media(min-height:560px){ .listoverlay{align-items:center;} }
+  .panel{background:var(--bg2);border:1px solid var(--line);border-radius:18px;width:100%;max-width:440px;
+    max-height:82vh;display:flex;flex-direction:column;overflow:hidden;}
+  .panelhead{display:flex;align-items:center;gap:8px;padding:14px 14px 12px;border-bottom:1px solid var(--line);}
+  .panelhead h3{font-family:var(--serif);font-weight:600;font-size:16px;}
+  .panelhead .sp{flex:1;}
+  .toggle{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.05);
+    border:1px solid var(--line);border-radius:999px;padding:6px 11px;cursor:pointer;white-space:nowrap;}
+  .toggle.on{color:var(--amber);border-color:rgba(215,162,90,.5);background:rgba(215,162,90,.12);}
+  .problist{overflow-y:auto;padding:4px 10px 12px;-webkit-overflow-scrolling:touch;}
+  .empty{color:var(--muted);font-size:13.5px;line-height:1.55;padding:30px 14px;text-align:center;}
+  .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.05);}
+  .prow:last-child{border-bottom:none;}
+  .pmain{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;min-width:0;}
+  .art{font-family:var(--serif);font-weight:600;font-size:13px;}
+  .art.der{color:#6ea8d8;} .art.die{color:#d18799;} .art.das{color:#7bbf8a;}
+  .pw{font-family:var(--serif);font-size:17px;color:var(--ink);}
+  .pipa{font-size:11.5px;color:var(--amber);opacity:.8;}
+  .pmeta{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap;}
+  .tag.x{color:var(--red);background:var(--red-bg);}
+  .tag.s{color:var(--amber);background:rgba(215,162,90,.16);}
+  .dots{display:inline-flex;gap:3px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
+  .dot.on{background:var(--green);}
+
+  /* colored article (mnemonic: der=blau, die=rot, das=grün) */
+  .g-der{color:#6ea8d8;} .g-die{color:#d18799;} .g-das{color:#7bbf8a;}
+  .word .g{font-weight:600;}
+
+  /* rules button top-right */
+  .rulesbtn{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--muted);
+    background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;
+    padding:5px 11px;cursor:pointer;white-space:nowrap;}
+  .rulesbtn:active{transform:scale(.95);}
+
+  /* rules overview */
+  .rulesbody{overflow-y:auto;padding:14px 16px 18px;-webkit-overflow-scrolling:touch;}
+  .rintro,.rfoot{font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .rintro{margin-bottom:14px;} .rfoot{margin-top:6px;}
+  .rsec{margin-bottom:16px;}
+  .rh{font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:7px;letter-spacing:.02em;}
+  .rsec .g{font-weight:700;}
+  .rulesbody ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .rulesbody li{font-size:13px;line-height:1.45;color:var(--ink);padding-left:13px;position:relative;}
+  .rulesbody li::before{content:"·";position:absolute;left:2px;color:var(--muted);}
+  .rulesbody li.rex{color:var(--muted);font-size:12px;margin-top:3px;}
+  .rulesbody li.rex::before{content:"⚠";left:0;font-size:10px;}
+  .rsec.der{border-left:2px solid rgba(110,168,216,.5);padding-left:11px;}
+  .rsec.die{border-left:2px solid rgba(209,135,153,.5);padding-left:11px;}
+  .rsec.das{border-left:2px solid rgba(123,191,138,.5);padding-left:11px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><b>der</b> · die · das</div>
+    <div class="stats">
+      <span class="stat" title="Aktuelle Serie richtiger Antworten">🔥 <b id="streak">0</b></span>
+      <span class="stat" title="Wörter, die du schon mindestens einmal richtig hattest">✓ <b id="mastered">0</b>/<b id="total">0</b></span>
+      <button class="rulesbtn" id="rulesBtn" title="Regeln ansehen">Regeln</button>
+    </div>
+  </div>
+  <div class="bar"><i id="barFill"></i></div>
+
+  <div class="stage">
+    <div class="hint">Welcher Artikel?</div>
+    <div class="word" id="word">…</div>
+    <div class="ipa" id="ipa"></div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="feedback" id="feedback"></div>
+    <div class="rule" id="rule"></div>
+  </div>
+
+  <div class="choices" id="choices">
+    <button class="choice" data-a="der">der</button>
+    <button class="choice" data-a="die">die</button>
+    <button class="choice" data-a="das">das</button>
+  </div>
+
+  <div class="toolbar">
+    <button class="toolbtn" id="soundBtn" title="Aussprache vorlesen"><span class="ti" id="soundIcon">🔈</span><span class="tl">Ton</span></button>
+    <button class="toolbtn" id="listBtn" title="Problemwörter ansehen"><span class="ti">⚑<span class="badge" id="probCount">0</span></span><span class="tl">Problemwörter</span></button>
+    <button class="toolbtn" id="resetBtn" title="Fortschritt zurücksetzen"><span class="ti">↺</span><span class="tl">Reset</span></button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h3>Fortschritt löschen?</h3>
+    <p>Alle gemerkten Wörter und Statistiken werden zurückgesetzt. Das lässt sich nicht rückgängig machen.</p>
+    <div class="row">
+      <button id="cancelReset">Abbrechen</button>
+      <button class="danger" id="confirmReset">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay listoverlay" id="listOverlay">
+  <div class="panel">
+    <div class="panelhead">
+      <h3 id="probTitle">Problemwörter</h3>
+      <span class="sp"></span>
+      <button class="toggle" id="focusToggle">Nur diese üben</button>
+      <button class="iconbtn" id="closeList" title="Schließen">✕</button>
+    </div>
+    <div class="problist" id="probList"></div>
+  </div>
+</div>
+
+<div class="overlay listoverlay" id="rulesOverlay">
+  <div class="panel">
+    <div class="panelhead">
+      <h3>Regeln &amp; Eselsbrücken</h3>
+      <span class="sp"></span>
+      <button class="iconbtn" id="closeRules" title="Schließen">✕</button>
+    </div>
+    <div class="rulesbody">
+      <p class="rintro">Faustregeln, keine Naturgesetze. Sie decken die meisten Wörter ab, Ausnahmen gibt es immer. Farbsystem aus dem Deutschunterricht: <span class="g g-der">der</span> blau, <span class="g g-die">die</span> rot, <span class="g g-das">das</span> grün.</p>
+
+      <div class="rsec der">
+        <div class="rh"><span class="g g-der">der</span> · maskulin</div>
+        <ul>
+          <li>Tage, Monate, Jahreszeiten: der Montag, der Juli, der Sommer</li>
+          <li>Himmelsrichtungen und Wetter: der Norden, der Wind, der Regen</li>
+          <li>Männliche Personen und Tiere: der Vater, der Hund</li>
+          <li>Alkohol (außer das Bier): der Wein, der Schnaps</li>
+          <li>Endung -er bei Tätigkeiten: der Fahrer, der Drucker</li>
+          <li>-ling: der Frühling, der Schmetterling</li>
+          <li>-ig, -ich: der Honig, der Teppich</li>
+          <li>-ismus: der Tourismus, der Realismus</li>
+          <li>-or: der Motor, der Professor</li>
+          <li>-ant, -ent, -ist, -eur (oft Personen): der Lieferant, der Student, der Polizist, der Friseur</li>
+          <li class="rex">Häufige Ausnahmen: das Bier, die Mutter, das Wasser, das Messer</li>
+        </ul>
+      </div>
+
+      <div class="rsec die">
+        <div class="rh"><span class="g g-die">die</span> · feminin</div>
+        <ul>
+          <li>Weibliche Personen: die Frau, die Lehrerin</li>
+          <li>Endung -e (sehr oft): die Blume, die Lampe</li>
+          <li>-ung, -heit, -keit, -schaft: die Zeitung, die Freiheit, die Möglichkeit, die Mannschaft</li>
+          <li>-ion, -tät, -ik, -ur: die Nation, die Qualität, die Musik, die Natur</li>
+          <li>-ei, -ie: die Bäckerei, die Strategie</li>
+          <li>-in (weibliche Form): die Studentin, die Ärztin</li>
+          <li>Zahlen, viele Bäume und Blumen: die Eins, die Eiche, die Rose</li>
+          <li class="rex">Häufige Ausnahmen: der Junge, der Name, das Auge, das Knie</li>
+        </ul>
+      </div>
+
+      <div class="rsec das">
+        <div class="rh"><span class="g g-das">das</span> · neutrum</div>
+        <ul>
+          <li>Verkleinerung -chen, -lein: das Mädchen, das Brötchen</li>
+          <li>-ment, -um, -tum: das Dokument, das Datum, das Eigentum</li>
+          <li>-nis, -sal: das Ergebnis, das Schicksal</li>
+          <li>Nomen aus Verben (Infinitiv): das Essen, das Leben</li>
+          <li>Junge Lebewesen: das Kind, das Baby, das Lamm</li>
+          <li>Metalle und Elemente: das Gold, das Silber, das Eisen</li>
+          <li>Farben, Buchstaben, Brüche: das Rot, das A, das Drittel</li>
+          <li>Viele Ge-Sammelwörter: das Gebirge, das Gemüse</li>
+          <li class="rex">Häufige Ausnahmen: der Reichtum, der Stahl, der Gedanke, die Geschichte, die Gefahr, der Geschmack, der Gewinn, die Geduld</li>
+        </ul>
+      </div>
+
+      <p class="rfoot">Wichtigste Faustregel bleibt: jedes Wort gleich mit Artikel lernen. Die Regeln sind eine Stütze, kein Ersatz.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATEN: [Nomen, Artikel, Anzeige-mit-Betonung, IPA]
+   - In der Anzeige steht die betonte Silbe in [eckigen Klammern]
+     und wird fett dargestellt.
+   - IPA ist eine handgefertigte breite Transkription. Verlässlich
+     bei regulären Wörtern; Lehnwörter ggf. prüfen.
+   ============================================================ */
+const RAW = [
+// ---------- der ----------
+["Tisch","der","[Tisch]","tɪʃ"],["Stuhl","der","[Stuhl]","ʃtuːl"],["Schrank","der","[Schrank]","ʃʁaŋk"],
+["Spiegel","der","[Spie]gel","ˈʃpiːɡl̩"],["Teppich","der","[Tep]pich","ˈtɛpɪç"],["Löffel","der","[Löf]fel","ˈlœfl̩"],
+["Teller","der","[Tel]ler","ˈtɛlɐ"],["Becher","der","[Be]cher","ˈbɛçɐ"],["Topf","der","[Topf]","tɔpf"],
+["Wecker","der","[We]cker","ˈvɛkɐ"],["Schlüssel","der","[Schlüs]sel","ˈʃlʏsl̩"],["Computer","der","Com[pu]ter","kɔmˈpjuːtɐ"],
+["Fernseher","der","[Fern]seher","ˈfɛʁnzeːɐ"],["Kühlschrank","der","[Kühl]schrank","ˈkyːlʃʁaŋk"],["Herd","der","[Herd]","heːɐ̯t"],
+["Ofen","der","[O]fen","ˈoːfn̩"],["Sessel","der","[Ses]sel","ˈzɛsl̩"],["Mann","der","[Mann]","man"],
+["Vater","der","[Va]ter","ˈfaːtɐ"],["Bruder","der","[Bru]der","ˈbʁuːdɐ"],["Sohn","der","[Sohn]","zoːn"],
+["Onkel","der","[On]kel","ˈɔŋkl̩"],["Großvater","der","[Groß]vater","ˈɡʁoːsfaːtɐ"],["Freund","der","[Freund]","fʁɔɪ̯nt"],
+["Nachbar","der","[Nach]bar","ˈnaːxbaːɐ̯"],["Lehrer","der","[Leh]rer","ˈleːʁɐ"],["Arzt","der","[Arzt]","aːɐ̯tst"],
+["Kopf","der","[Kopf]","kɔpf"],["Hals","der","[Hals]","hals"],["Arm","der","[Arm]","aʁm"],
+["Finger","der","[Fin]ger","ˈfɪŋɐ"],["Bauch","der","[Bauch]","baʊ̯x"],["Rücken","der","[Rü]cken","ˈʁʏkn̩"],
+["Mund","der","[Mund]","mʊnt"],["Zahn","der","[Zahn]","tsaːn"],["Fuß","der","[Fuß]","fuːs"],
+["Daumen","der","[Dau]men","ˈdaʊ̯mən"],["Hund","der","[Hund]","hʊnt"],["Vogel","der","[Vo]gel","ˈfoːɡl̩"],
+["Fisch","der","[Fisch]","fɪʃ"],["Bär","der","[Bär]","bɛːɐ̯"],["Löwe","der","[Lö]we","ˈløːvə"],
+["Tiger","der","[Ti]ger","ˈtiːɡɐ"],["Affe","der","[Af]fe","ˈafə"],["Wolf","der","[Wolf]","vɔlf"],
+["Fuchs","der","[Fuchs]","fʊks"],["Hahn","der","[Hahn]","haːn"],["Elefant","der","Ele[fant]","eleˈfant"],
+["Schmetterling","der","[Schmet]terling","ˈʃmɛtɐlɪŋ"],["Tag","der","[Tag]","taːk"],["Morgen","der","[Mor]gen","ˈmɔʁɡn̩"],
+["Abend","der","[A]bend","ˈaːbn̩t"],["Mittag","der","[Mit]tag","ˈmɪtaːk"],["Monat","der","[Mo]nat","ˈmoːnat"],
+["Sommer","der","[Som]mer","ˈzɔmɐ"],["Winter","der","[Win]ter","ˈvɪntɐ"],["Herbst","der","[Herbst]","hɛʁpst"],
+["Frühling","der","[Früh]ling","ˈfʁyːlɪŋ"],["Termin","der","Ter[min]","tɛʁˈmiːn"],["Baum","der","[Baum]","baʊ̯m"],
+["Wald","der","[Wald]","valt"],["Berg","der","[Berg]","bɛʁk"],["Fluss","der","[Fluss]","flʊs"],
+["See","der","[See]","zeː"],["Strand","der","[Strand]","ʃtʁant"],["Himmel","der","[Him]mel","ˈhɪml̩"],
+["Mond","der","[Mond]","moːnt"],["Stern","der","[Stern]","ʃtɛʁn"],["Regen","der","[Re]gen","ˈʁeːɡn̩"],
+["Schnee","der","[Schnee]","ʃneː"],["Wind","der","[Wind]","vɪnt"],["Sturm","der","[Sturm]","ʃtʊʁm"],
+["Nebel","der","[Ne]bel","ˈneːbl̩"],["Blitz","der","[Blitz]","blɪts"],["Donner","der","[Don]ner","ˈdɔnɐ"],
+["Wagen","der","[Wa]gen","ˈvaːɡn̩"],["Zug","der","[Zug]","tsuːk"],["Bus","der","[Bus]","bʊs"],
+["Lastwagen","der","[Last]wagen","ˈlastvaːɡn̩"],["Bahnhof","der","[Bahn]hof","ˈbaːnhoːf"],["Flughafen","der","[Flug]hafen","ˈfluːkhaːfn̩"],
+["Hafen","der","[Ha]fen","ˈhaːfn̩"],["Weg","der","[Weg]","veːk"],["Platz","der","[Platz]","plats"],
+["Markt","der","[Markt]","maʁkt"],["Supermarkt","der","[Su]permarkt","ˈzuːpɐmaʁkt"],["Laden","der","[La]den","ˈlaːdn̩"],
+["Park","der","[Park]","paʁk"],["Kaffee","der","[Kaf]fee","ˈkafeː"],["Tee","der","[Tee]","teː"],
+["Wein","der","[Wein]","vaɪ̯n"],["Saft","der","[Saft]","zaft"],["Käse","der","[Kä]se","ˈkɛːzə"],
+["Zucker","der","[Zu]cker","ˈtsʊkɐ"],["Honig","der","[Ho]nig","ˈhoːnɪç"],["Pfeffer","der","[Pfef]fer","ˈpfɛfɐ"],
+["Apfel","der","[Ap]fel","ˈapfl̩"],["Salat","der","Sa[lat]","zaˈlaːt"],["Kuchen","der","[Ku]chen","ˈkuːxn̩"],
+["Brief","der","[Brief]","bʁiːf"],["Stift","der","[Stift]","ʃtɪft"],["Kalender","der","Ka[len]der","kaˈlɛndɐ"],
+["Koffer","der","[Kof]fer","ˈkɔfɐ"],["Hut","der","[Hut]","huːt"],["Schuh","der","[Schuh]","ʃuː"],
+["Mantel","der","[Man]tel","ˈmantl̩"],["Pullover","der","Pull[o]ver","pʊˈloːvɐ"],["Rock","der","[Rock]","ʁɔk"],
+["Gürtel","der","[Gür]tel","ˈɡʏʁtl̩"],["Ring","der","[Ring]","ʁɪŋ"],["Preis","der","[Preis]","pʁaɪ̯s"],
+["Beruf","der","Be[ruf]","bəˈʁuːf"],["Urlaub","der","[Ur]laub","ˈuːɐ̯laʊ̯p"],["Geburtstag","der","Ge[burts]tag","ɡəˈbuːɐ̯tstaːk"],
+["Name","der","[Na]me","ˈnaːmə"],["Satz","der","[Satz]","zats"],["Fehler","der","[Feh]ler","ˈfeːlɐ"],
+["Anfang","der","[An]fang","ˈanfaŋ"],["Schluss","der","[Schluss]","ʃlʊs"],
+
+// ---------- das ----------
+["Haus","das","[Haus]","haʊ̯s"],["Auto","das","[Au]to","ˈaʊ̯to"],["Buch","das","[Buch]","buːx"],
+["Kind","das","[Kind]","kɪnt"],["Baby","das","[Ba]by","ˈbeːbi"],["Mädchen","das","[Mäd]chen","ˈmɛːtçən"],
+["Fenster","das","[Fens]ter","ˈfɛnstɐ"],["Bett","das","[Bett]","bɛt"],["Zimmer","das","[Zim]mer","ˈtsɪmɐ"],
+["Sofa","das","[So]fa","ˈzoːfa"],["Regal","das","Re[gal]","ʁeˈɡaːl"],["Kissen","das","[Kis]sen","ˈkɪsn̩"],
+["Bild","das","[Bild]","bɪlt"],["Foto","das","[Fo]to","ˈfoːto"],["Heft","das","[Heft]","hɛft"],
+["Papier","das","Pa[pier]","paˈpiːɐ̯"],["Geld","das","[Geld]","ɡɛlt"],["Telefon","das","Tele[fon]","teleˈfoːn"],
+["Handy","das","[Han]dy","ˈhɛndi"],["Radio","das","[Ra]dio","ˈʁaːdi̯o"],["Tablet","das","[Tab]let","ˈtɛblɛt"],
+["Fahrrad","das","[Fahr]rad","ˈfaːɐ̯ʁaːt"],["Flugzeug","das","[Flug]zeug","ˈfluːktsɔɪ̯k"],["Schiff","das","[Schiff]","ʃɪf"],
+["Boot","das","[Boot]","boːt"],["Auge","das","[Au]ge","ˈaʊ̯ɡə"],["Ohr","das","[Ohr]","oːɐ̯"],
+["Bein","das","[Bein]","baɪ̯n"],["Knie","das","[Knie]","kniː"],["Herz","das","[Herz]","hɛʁts"],
+["Gesicht","das","Ge[sicht]","ɡəˈzɪçt"],["Haar","das","[Haar]","haːɐ̯"],["Kinn","das","[Kinn]","kɪn"],
+["Pferd","das","[Pferd]","pfeːɐ̯t"],["Schwein","das","[Schwein]","ʃvaɪ̯n"],["Schaf","das","[Schaf]","ʃaːf"],
+["Huhn","das","[Huhn]","huːn"],["Kaninchen","das","Ka[nin]chen","kaˈniːnçən"],["Tier","das","[Tier]","tiːɐ̯"],
+["Brot","das","[Brot]","bʁoːt"],["Brötchen","das","[Bröt]chen","ˈbʁøːtçən"],["Ei","das","[Ei]","aɪ̯"],
+["Wasser","das","[Was]ser","ˈvasɐ"],["Bier","das","[Bier]","biːɐ̯"],["Glas","das","[Glas]","ɡlaːs"],
+["Messer","das","[Mes]ser","ˈmɛsɐ"],["Gemüse","das","Ge[mü]se","ɡəˈmyːzə"],["Obst","das","[Obst]","oːpst"],
+["Fleisch","das","[Fleisch]","flaɪ̯ʃ"],["Salz","das","[Salz]","zalts"],["Öl","das","[Öl]","øːl"],
+["Mehl","das","[Mehl]","meːl"],["Hemd","das","[Hemd]","hɛmt"],["Kleid","das","[Kleid]","klaɪ̯t"],
+["Spiel","das","[Spiel]","ʃpiːl"],["Wort","das","[Wort]","vɔʁt"],["Jahr","das","[Jahr]","jaːɐ̯"],
+["Land","das","[Land]","lant"],["Meer","das","[Meer]","meːɐ̯"],["Dorf","das","[Dorf]","dɔʁf"],
+["Feld","das","[Feld]","fɛlt"],["Tal","das","[Tal]","taːl"],["Feuer","das","[Feu]er","ˈfɔɪ̯ɐ"],
+["Gewitter","das","Ge[wit]ter","ɡəˈvɪtɐ"],["Gras","das","[Gras]","ɡʁaːs"],["Hotel","das","Ho[tel]","hoˈtɛl"],
+["Café","das","Ca[fé]","kaˈfeː"],["Kino","das","[Ki]no","ˈkiːno"],["Theater","das","The[a]ter","teˈʔaːtɐ"],
+["Museum","das","Mu[se]um","muˈzeːʊm"],["Restaurant","das","Restau[rant]","ʁɛstoˈʁãː"],["Krankenhaus","das","[Kran]kenhaus","ˈkʁaŋkn̩haʊ̯s"],
+["Geschäft","das","Ge[schäft]","ɡəˈʃɛft"],["Gebäude","das","Ge[bäu]de","ɡəˈbɔɪ̯də"],["Büro","das","Bü[ro]","byˈʁoː"],
+["Klavier","das","Kla[vier]","klaˈviːɐ̯"],["Geschenk","das","Ge[schenk]","ɡəˈʃɛŋk"],["Problem","das","Pro[blem]","pʁoˈbleːm"],
+["Wetter","das","[Wet]ter","ˈvɛtɐ"],["Frühstück","das","[Früh]stück","ˈfʁyːʃtʏk"],["Abendessen","das","[A]bendessen","ˈaːbn̩tʔɛsn̩"],
+["Mittagessen","das","[Mit]tagessen","ˈmɪtaːkʔɛsn̩"],["Wochenende","das","[Wo]chenende","ˈvɔxn̩ʔɛndə"],["Beispiel","das","[Bei]spiel","ˈbaɪ̯ʃpiːl"],
+["Zentrum","das","[Zen]trum","ˈtsɛntʁʊm"],
+
+// ---------- die ----------
+["Frau","die","[Frau]","fʁaʊ̯"],["Mutter","die","[Mut]ter","ˈmʊtɐ"],["Schwester","die","[Schwes]ter","ˈʃvɛstɐ"],
+["Tochter","die","[Toch]ter","ˈtɔxtɐ"],["Tante","die","[Tan]te","ˈtantə"],["Großmutter","die","[Groß]mutter","ˈɡʁoːsmʊtɐ"],
+["Freundin","die","[Freun]din","ˈfʁɔɪ̯ndɪn"],["Nachbarin","die","[Nach]barin","ˈnaːxbaːʁɪn"],["Lehrerin","die","[Leh]rerin","ˈleːʁəʁɪn"],
+["Ärztin","die","[Ärz]tin","ˈɛːɐ̯tstɪn"],["Katze","die","[Kat]ze","ˈkatsə"],["Kuh","die","[Kuh]","kuː"],
+["Ziege","die","[Zie]ge","ˈtsiːɡə"],["Ente","die","[En]te","ˈɛntə"],["Maus","die","[Maus]","maʊ̯s"],
+["Schlange","die","[Schlan]ge","ˈʃlaŋə"],["Spinne","die","[Spin]ne","ˈʃpɪnə"],["Biene","die","[Bie]ne","ˈbiːnə"],
+["Fliege","die","[Flie]ge","ˈfliːɡə"],["Hand","die","[Hand]","hant"],["Nase","die","[Na]se","ˈnaːzə"],
+["Zunge","die","[Zun]ge","ˈtsʊŋə"],["Lippe","die","[Lip]pe","ˈlɪpə"],["Schulter","die","[Schul]ter","ˈʃʊltɐ"],
+["Brust","die","[Brust]","bʁʊst"],["Wange","die","[Wan]ge","ˈvaŋə"],["Stirn","die","[Stirn]","ʃtɪʁn"],
+["Augenbraue","die","[Au]genbraue","ˈaʊ̯ɡn̩bʁaʊ̯ə"],["Sonne","die","[Son]ne","ˈzɔnə"],["Wolke","die","[Wol]ke","ˈvɔlkə"],
+["Erde","die","[Er]de","ˈeːɐ̯də"],["Luft","die","[Luft]","lʊft"],["Blume","die","[Blu]me","ˈbluːmə"],
+["Wiese","die","[Wie]se","ˈviːzə"],["Insel","die","[In]sel","ˈɪnzl̩"],["Stadt","die","[Stadt]","ʃtat"],
+["Straße","die","[Stra]ße","ˈʃtʁaːsə"],["Brücke","die","[Brü]cke","ˈbʁʏkə"],["Kirche","die","[Kir]che","ˈkɪʁçə"],
+["Schule","die","[Schu]le","ˈʃuːlə"],["Apotheke","die","Apo[the]ke","apoˈteːkə"],["Bank","die","[Bank]","baŋk"],
+["Post","die","[Post]","pɔst"],["Bar","die","[Bar]","baːɐ̯"],["Tür","die","[Tür]","tyːɐ̯"],
+["Wand","die","[Wand]","vant"],["Decke","die","[De]cke","ˈdɛkə"],["Lampe","die","[Lam]pe","ˈlampə"],
+["Uhr","die","[Uhr]","uːɐ̯"],["Tasche","die","[Ta]sche","ˈtaʃə"],["Flasche","die","[Fla]sche","ˈflaʃə"],
+["Gabel","die","[Ga]bel","ˈɡaːbl̩"],["Tasse","die","[Tas]se","ˈtasə"],["Kanne","die","[Kan]ne","ˈkanə"],
+["Pfanne","die","[Pfan]ne","ˈpfanə"],["Schüssel","die","[Schüs]sel","ˈʃʏsl̩"],["Serviette","die","Servi[et]te","zɛʁˈvi̯ɛtə"],
+["Milch","die","[Milch]","mɪlç"],["Butter","die","[But]ter","ˈbʊtɐ"],["Sahne","die","[Sah]ne","ˈzaːnə"],
+["Marmelade","die","Marme[la]de","maʁməˈlaːdə"],["Suppe","die","[Sup]pe","ˈzʊpə"],["Pizza","die","[Piz]za","ˈpɪtsa"],
+["Schokolade","die","Schoko[la]de","ʃokoˈlaːdə"],["Banane","die","Ba[na]ne","baˈnaːnə"],["Orange","die","O[ran]ge","oˈʁãːʒə"],
+["Zitrone","die","Zi[tro]ne","tsiˈtʁoːnə"],["Kartoffel","die","Kar[tof]fel","kaʁˈtɔfl̩"],["Tomate","die","To[ma]te","toˈmaːtə"],
+["Gurke","die","[Gur]ke","ˈɡʊʁkə"],["Zwiebel","die","[Zwie]bel","ˈtsviːbl̩"],["Karotte","die","Ka[rot]te","kaˈʁɔtə"],
+["Birne","die","[Bir]ne","ˈbɪʁnə"],["Erdbeere","die","[Erd]beere","ˈeːɐ̯tbeːʁə"],["Kirsche","die","[Kir]sche","ˈkɪʁʃə"],
+["Traube","die","[Trau]be","ˈtʁaʊ̯bə"],["Hose","die","[Ho]se","ˈhoːzə"],["Jacke","die","[Ja]cke","ˈjakə"],
+["Bluse","die","[Blu]se","ˈbluːzə"],["Mütze","die","[Müt]ze","ˈmʏtsə"],["Brille","die","[Bril]le","ˈbʁɪlə"],
+["Krawatte","die","Kra[wat]te","kʁaˈvatə"],["Socke","die","[So]cke","ˈzɔkə"],["Woche","die","[Wo]che","ˈvɔxə"],
+["Stunde","die","[Stun]de","ˈʃtʊndə"],["Minute","die","Mi[nu]te","miˈnuːtə"],["Sekunde","die","Se[kun]de","zeˈkʊndə"],
+["Zeit","die","[Zeit]","tsaɪ̯t"],["Reise","die","[Rei]se","ˈʁaɪ̯zə"],["Arbeit","die","[Ar]beit","ˈaʁbaɪ̯t"],
+["Frage","die","[Fra]ge","ˈfʁaːɡə"],["Antwort","die","[Ant]wort","ˈantvɔʁt"],["Sprache","die","[Spra]che","ˈʃpʁaːxə"],
+["Karte","die","[Kar]te","ˈkaʁtə"],["Zeitung","die","[Zei]tung","ˈtsaɪ̯tʊŋ"],["Rechnung","die","[Rech]nung","ˈʁɛçnʊŋ"],
+["Wohnung","die","[Woh]nung","ˈvoːnʊŋ"],
+
+// ====================================================================
+// VERKAUF
+// ====================================================================
+["Verkauf","der","Ver[kauf]","fɛɐ̯ˈkaʊ̯f"],["Vertrieb","der","Ver[trieb]","fɛɐ̯ˈtʁiːp"],["Umsatz","der","[Um]satz","ˈʊmzats"],
+["Gewinn","der","Ge[winn]","ɡəˈvɪn"],["Verlust","der","Ver[lust]","fɛɐ̯ˈlʊst"],["Rabatt","der","Ra[batt]","ʁaˈbat"],
+["Kunde","der","[Kun]de","ˈkʊndə"],["Kundin","die","[Kun]din","ˈkʊndɪn"],["Auftrag","der","[Auf]trag","ˈaʊ̯ftʁaːk"],
+["Bestellung","die","Be[stel]lung","bəˈʃtɛlʊŋ"],["Lieferung","die","[Lie]ferung","ˈliːfəʁʊŋ"],["Versand","der","Ver[sand]","fɛɐ̯ˈzant"],
+["Ware","die","[Wa]re","ˈvaːʁə"],["Angebot","das","[An]gebot","ˈanɡəboːt"],["Nachfrage","die","[Nach]frage","ˈnaːxfʁaːɡə"],
+["Marke","die","[Mar]ke","ˈmaʁkə"],["Vertrag","der","Ver[trag]","fɛɐ̯ˈtʁaːk"],["Provision","die","Provi[sion]","pʁoviˈzi̯oːn"],
+["Budget","das","Bud[get]","byˈdʒeː"],["Zielgruppe","die","[Ziel]gruppe","ˈtsiːlɡʁʊpə"],["Messe","die","[Mes]se","ˈmɛsə"],
+["Werbung","die","[Wer]bung","ˈvɛʁbʊŋ"],["Katalog","der","Kata[log]","kataˈloːk"],["Sortiment","das","Sorti[ment]","zɔʁtiˈmɛnt"],
+["Beratung","die","Be[ra]tung","bəˈʁaːtʊŋ"],["Berater","der","Be[ra]ter","bəˈʁaːtɐ"],["Verhandlung","die","Ver[hand]lung","fɛɐ̯ˈhandlʊŋ"],
+
+// ====================================================================
+// LAGER / LOGISTIK
+// ====================================================================
+["Lager","das","[La]ger","ˈlaːɡɐ"],["Logistik","die","Logis[tik]","loɡɪsˈtɪk"],["Bestand","der","Be[stand]","bəˈʃtant"],
+["Palette","die","Pa[let]te","paˈlɛtə"],["Karton","der","Kar[ton]","kaʁˈtɔŋ"],["Kiste","die","[Kis]te","ˈkɪstə"],
+["Gabelstapler","der","[Ga]belstapler","ˈɡaːbl̩ʃtaplɐ"],["Wareneingang","der","[Wa]reneingang","ˈvaːʁənʔaɪ̯nɡaŋ"],["Warenausgang","der","[Wa]renausgang","ˈvaːʁənʔaʊ̯sɡaŋ"],
+["Lieferkette","die","[Lie]ferkette","ˈliːfɐkɛtə"],["Lieferant","der","Liefe[rant]","lifəˈʁant"],["Spedition","die","Spedi[tion]","ʃpediˈtsi̯oːn"],
+["Transport","der","Trans[port]","tʁansˈpɔʁt"],["Container","der","Con[tai]ner","kɔnˈtɛːnɐ"],["Inventur","die","Inven[tur]","ɪnvɛnˈtuːɐ̯"],
+["Verpackung","die","Ver[pa]ckung","fɛɐ̯ˈpakʊŋ"],["Stapel","der","[Sta]pel","ˈʃtaːpl̩"],["Menge","die","[Men]ge","ˈmɛŋə"],
+["Lieferzeit","die","[Lie]ferzeit","ˈliːfɐtsaɪ̯t"],
+
+// ====================================================================
+// UNTERNEHMEN / BÜRO
+// ====================================================================
+["Unternehmen","das","Unter[neh]men","ʊntɐˈneːmən"],["Firma","die","[Fir]ma","ˈfɪʁma"],["Betrieb","der","Be[trieb]","bəˈtʁiːp"],
+["Chef","der","[Chef]","ʃɛf"],["Chefin","die","[Che]fin","ˈʃɛfɪn"],["Mitarbeiter","der","[Mit]arbeiter","ˈmɪtʔaʁbaɪ̯tɐ"],
+["Mitarbeiterin","die","[Mit]arbeiterin","ˈmɪtʔaʁbaɪ̯təʁɪn"],["Kollege","der","Kol[le]ge","kɔˈleːɡə"],["Kollegin","die","Kol[le]gin","kɔˈleːɡɪn"],
+["Abteilung","die","Ab[tei]lung","apˈtaɪ̯lʊŋ"],["Besprechung","die","Be[spre]chung","bəˈʃpʁɛçʊŋ"],["Meeting","das","[Mee]ting","ˈmiːtɪŋ"],
+["Bericht","der","Be[richt]","bəˈʁɪçt"],["Aufgabe","die","[Auf]gabe","ˈaʊ̯fɡaːbə"],["Projekt","das","Pro[jekt]","pʁoˈjɛkt"],
+["Ziel","das","[Ziel]","tsiːl"],["Frist","die","[Frist]","fʁɪst"],["Pause","die","[Pau]se","ˈpaʊ̯zə"],
+["Gehalt","das","Ge[halt]","ɡəˈhalt"],["Lohn","der","[Lohn]","loːn"],["Steuer","die","[Steu]er","ˈʃtɔɪ̯ɐ"],
+["Unterschrift","die","[Un]terschrift","ˈʊntɐʃʁɪft"],["Drucker","der","[Dru]cker","ˈdʁʊkɐ"],["Ordner","der","[Ord]ner","ˈɔʁdnɐ"],
+["Akte","die","[Ak]te","ˈaktə"],["Dokument","das","Doku[ment]","dokuˈmɛnt"],["Konferenz","die","Konfe[renz]","kɔnfeˈʁɛnts"],
+["Kasse","die","[Kas]se","ˈkasə"],["Konto","das","[Kon]to","ˈkɔnto"],["Quittung","die","[Quit]tung","ˈkvɪtʊŋ"],
+["Beleg","der","Be[leg]","bəˈleːk"],["Buchhaltung","die","[Buch]haltung","ˈbuːxhaltʊŋ"],["Schicht","die","[Schicht]","ʃɪçt"],
+["Sitzung","die","[Sit]zung","ˈzɪtsʊŋ"],["Antrag","der","[An]trag","ˈantʁaːk"],["Genehmigung","die","Ge[neh]migung","ɡəˈneːmɪɡʊŋ"],
+["Kündigung","die","[Kün]digung","ˈkʏndɪɡʊŋ"],["Bewerbung","die","Be[wer]bung","bəˈvɛʁbʊŋ"],["Schulung","die","[Schu]lung","ˈʃuːlʊŋ"],
+["E-Mail","die","[E]-Mail","ˈiːmeːl"],
+
+// ====================================================================
+// MENSCHEN / BERUFE
+// ====================================================================
+["Schüler","der","[Schü]ler","ˈʃyːlɐ"],["Schülerin","die","[Schü]lerin","ˈʃyːləʁɪn"],["Student","der","Stu[dent]","ʃtuˈdɛnt"],
+["Studentin","die","Stu[den]tin","ʃtuˈdɛntɪn"],["Polizist","der","Poli[zist]","poliˈtsɪst"],["Verkäufer","der","Ver[käu]fer","fɛɐ̯ˈkɔɪ̯fɐ"],
+["Verkäuferin","die","Ver[käu]ferin","fɛɐ̯ˈkɔɪ̯fəʁɪn"],["Künstler","der","[Künst]ler","ˈkʏnstlɐ"],["Maler","der","[Ma]ler","ˈmaːlɐ"],
+["Sänger","der","[Sän]ger","ˈzɛŋɐ"],["Koch","der","[Koch]","kɔx"],["Bäcker","der","[Bä]cker","ˈbɛkɐ"],
+["Kellner","der","[Kell]ner","ˈkɛlnɐ"],["Fahrer","der","[Fah]rer","ˈfaːʁɐ"],["Pilot","der","Pi[lot]","piˈloːt"],
+["Soldat","der","Sol[dat]","zɔlˈdaːt"],["Richter","der","[Rich]ter","ˈʁɪçtɐ"],["Anwalt","der","[An]walt","ˈanvalt"],
+["Direktor","der","Di[rek]tor","diˈʁɛktoːɐ̯"],["Präsident","der","Präsi[dent]","pʁɛziˈdɛnt"],["Professor","der","Pro[fes]sor","pʁoˈfɛsoːɐ̯"],
+["Ingenieur","der","Inge[nieur]","ɪnʒeˈni̯øːɐ̯"],["Gast","der","[Gast]","ɡast"],["Held","der","[Held]","hɛlt"],
+["König","der","[Kö]nig","ˈkøːnɪç"],["Königin","die","[Kö]nigin","ˈkøːnɪɡɪn"],["Prinz","der","[Prinz]","pʁɪnts"],
+["Prinzessin","die","Prin[zes]sin","pʁɪnˈtsɛsɪn"],
+
+// ====================================================================
+// KÖRPER / GESUNDHEIT
+// ====================================================================
+["Haut","die","[Haut]","haʊ̯t"],["Knochen","der","[Kno]chen","ˈknɔxn̩"],["Blut","das","[Blut]","bluːt"],
+["Lunge","die","[Lun]ge","ˈlʊŋə"],["Leber","die","[Le]ber","ˈleːbɐ"],["Niere","die","[Nie]re","ˈniːʁə"],
+["Magen","der","[Ma]gen","ˈmaːɡn̩"],["Gehirn","das","Ge[hirn]","ɡəˈhɪʁn"],["Muskel","der","[Mus]kel","ˈmʊskl̩"],
+["Krankheit","die","[Krank]heit","ˈkʁaŋkhaɪ̯t"],["Fieber","das","[Fie]ber","ˈfiːbɐ"],["Husten","der","[Hus]ten","ˈhuːstn̩"],
+["Wunde","die","[Wun]de","ˈvʊndə"],["Medizin","die","Medi[zin]","mediˈtsiːn"],["Tablette","die","Ta[blet]te","taˈblɛtə"],
+["Spritze","die","[Sprit]ze","ˈʃpʁɪtsə"],
+
+// ====================================================================
+// HAUS / EINRICHTUNG
+// ====================================================================
+["Garten","der","[Gar]ten","ˈɡaʁtn̩"],["Keller","der","[Kel]ler","ˈkɛlɐ"],["Dach","das","[Dach]","dax"],
+["Treppe","die","[Trep]pe","ˈtʁɛpə"],["Balkon","der","Bal[kon]","balˈkɔŋ"],["Garage","die","Ga[ra]ge","ɡaˈʁaːʒə"],
+["Zaun","der","[Zaun]","tsaʊ̯n"],["Mauer","die","[Mau]er","ˈmaʊ̯ɐ"],["Boden","der","[Bo]den","ˈboːdn̩"],
+["Heizung","die","[Hei]zung","ˈhaɪ̯tsʊŋ"],["Dusche","die","[Du]sche","ˈduːʃə"],["Toilette","die","Toi[let]te","tɔ̯aˈlɛtə"],
+["Vorhang","der","[Vor]hang","ˈfoːɐ̯haŋ"],["Werkzeug","das","[Werk]zeug","ˈvɛʁktsɔɪ̯k"],["Hammer","der","[Ham]mer","ˈhamɐ"],
+["Nagel","der","[Na]gel","ˈnaːɡl̩"],["Schere","die","[Sche]re","ˈʃeːʁə"],["Besen","der","[Be]sen","ˈbeːzn̩"],
+["Eimer","der","[Ei]mer","ˈaɪ̯mɐ"],["Kerze","die","[Ker]ze","ˈkɛʁtsə"],["Spielzeug","das","[Spiel]zeug","ˈʃpiːltsɔɪ̯k"],
+
+// ====================================================================
+// NATUR
+// ====================================================================
+["Pflanze","die","[Pflan]ze","ˈpflantsə"],["Blatt","das","[Blatt]","blat"],["Wurzel","die","[Wur]zel","ˈvʊʁtsl̩"],
+["Ast","der","[Ast]","ast"],["Stein","der","[Stein]","ʃtaɪ̯n"],["Sand","der","[Sand]","zant"],
+["Höhle","die","[Höh]le","ˈhøːlə"],["Hügel","der","[Hü]gel","ˈhyːɡl̩"],["Küste","die","[Küs]te","ˈkʏstə"],
+["Teich","der","[Teich]","taɪ̯ç"],["Quelle","die","[Quel]le","ˈkvɛlə"],["Eis","das","[Eis]","aɪ̯s"],
+["Frost","der","[Frost]","fʁɔst"],["Schatten","der","[Schat]ten","ˈʃatn̩"],["Welle","die","[Wel]le","ˈvɛlə"],
+
+// ====================================================================
+// TIERE
+// ====================================================================
+["Esel","der","[E]sel","ˈeːzl̩"],["Pony","das","[Po]ny","ˈpoːni"],["Eule","die","[Eu]le","ˈɔɪ̯lə"],
+["Frosch","der","[Frosch]","fʁɔʃ"],["Schnecke","die","[Schne]cke","ˈʃnɛkə"],["Käfer","der","[Kä]fer","ˈkɛːfɐ"],
+["Mücke","die","[Mü]cke","ˈmʏkə"],["Wurm","der","[Wurm]","vʊʁm"],["Pinguin","der","[Pin]guin","ˈpɪŋɡu̯iːn"],
+["Feder","die","[Fe]der","ˈfeːdɐ"],["Flügel","der","[Flü]gel","ˈflyːɡl̩"],["Nest","das","[Nest]","nɛst"],
+["Schwanz","der","[Schwanz]","ʃvants"],
+
+// ====================================================================
+// ESSEN / TRINKEN
+// ====================================================================
+["Müsli","das","[Müs]li","ˈmyːsli"],["Nudel","die","[Nu]del","ˈnuːdl̩"],["Reis","der","[Reis]","ʁaɪ̯s"],
+["Wurst","die","[Wurst]","vʊʁst"],["Schinken","der","[Schin]ken","ˈʃɪŋkn̩"],["Quark","der","[Quark]","kvaʁk"],
+["Nuss","die","[Nuss]","nʊs"],["Erbse","die","[Erb]se","ˈɛʁpsə"],["Bohne","die","[Boh]ne","ˈboːnə"],
+["Pilz","der","[Pilz]","pɪlts"],["Kohl","der","[Kohl]","koːl"],["Spinat","der","Spi[nat]","ʃpiˈnaːt"],
+["Soße","die","[So]ße","ˈzoːsə"],["Essig","der","[Es]sig","ˈɛsɪç"],["Senf","der","[Senf]","zɛnf"],
+["Limonade","die","Limo[na]de","limoˈnaːdə"],["Schnaps","der","[Schnaps]","ʃnaps"],["Sekt","der","[Sekt]","zɛkt"],
+
+// ====================================================================
+// ABSTRAKT / ALLTAG
+// ====================================================================
+["Liebe","die","[Lie]be","ˈliːbə"],["Glück","das","[Glück]","ɡlʏk"],["Angst","die","[Angst]","aŋst"],
+["Freude","die","[Freu]de","ˈfʁɔɪ̯də"],["Hoffnung","die","[Hoff]nung","ˈhɔfnʊŋ"],["Traum","der","[Traum]","tʁaʊ̯m"],
+["Wunsch","der","[Wunsch]","vʊnʃ"],["Idee","die","I[dee]","iˈdeː"],["Gedanke","der","Ge[dan]ke","ɡəˈdaŋkə"],
+["Wahrheit","die","[Wahr]heit","ˈvaːɐ̯haɪ̯t"],["Lüge","die","[Lü]ge","ˈlyːɡə"],["Macht","die","[Macht]","maxt"],
+["Kraft","die","[Kraft]","kʁaft"],["Ruhe","die","[Ru]he","ˈʁuːə"],["Lärm","der","[Lärm]","lɛʁm"],
+["Stimme","die","[Stim]me","ˈʃtɪmə"],["Geschichte","die","Ge[schich]te","ɡəˈʃɪçtə"],["Musik","die","Mu[sik]","muˈziːk"],
+["Lied","das","[Lied]","liːt"],["Klang","der","[Klang]","klaŋ"],["Farbe","die","[Far]be","ˈfaʁbə"],
+["Licht","das","[Licht]","lɪçt"],["Zahl","die","[Zahl]","tsaːl"],["Sache","die","[Sa]che","ˈzaxə"],
+["Ding","das","[Ding]","dɪŋ"],["Teil","der","[Teil]","taɪ̯l"],["Mitte","die","[Mit]te","ˈmɪtə"],
+["Ende","das","[En]de","ˈɛndə"],["Grund","der","[Grund]","ɡʁʊnt"],["Sinn","der","[Sinn]","zɪn"],
+["Regel","die","[Re]gel","ˈʁeːɡl̩"],["Ordnung","die","[Ord]nung","ˈɔʁdnʊŋ"],["Gefahr","die","Ge[fahr]","ɡəˈfaːɐ̯"],
+["Mut","der","[Mut]","muːt"],["Geduld","die","Ge[duld]","ɡəˈdʊlt"],
+
+// ====================================================================
+// KLEIDUNG
+// ====================================================================
+["Stiefel","der","[Stie]fel","ˈʃtiːfl̩"],["Schal","der","[Schal]","ʃaːl"],["Handschuh","der","[Hand]schuh","ˈhantʃuː"],
+["Knopf","der","[Knopf]","knɔpf"],["Reißverschluss","der","[Reiß]verschluss","ˈʁaɪ̯sfɛɐ̯ʃlʊs"],["Schmuck","der","[Schmuck]","ʃmʊk"],
+["Kette","die","[Ket]te","ˈkɛtə"],["Anzug","der","[An]zug","ˈantsuːk"],["Schlafanzug","der","[Schlaf]anzug","ˈʃlaːfʔantsuːk"],
+["T-Shirt","das","[T]-Shirt","ˈtiːʃœʁt"],
+
+// ====================================================================
+// REISE / VERKEHR
+// ====================================================================
+["Ticket","das","[Ti]cket","ˈtɪkɛt"],["Flug","der","[Flug]","fluːk"],["Pass","der","[Pass]","pas"],
+["Ausweis","der","[Aus]weis","ˈaʊ̯svaɪ̯s"],["Grenze","die","[Gren]ze","ˈɡʁɛntsə"],["Gepäck","das","Ge[päck]","ɡəˈpɛk"],
+["Rucksack","der","[Ruck]sack","ˈʁʊkzak"],["Zelt","das","[Zelt]","tsɛlt"],["Tankstelle","die","[Tank]stelle","ˈtaŋkʃtɛlə"],
+["Ampel","die","[Am]pel","ˈampl̩"],["Kreuzung","die","[Kreu]zung","ˈkʁɔɪ̯tsʊŋ"],["Tunnel","der","[Tun]nel","ˈtʊnl̩"],
+["Autobahn","die","[Au]tobahn","ˈaʊ̯tobaːn"],["Rad","das","[Rad]","ʁaːt"],["Reifen","der","[Rei]fen","ˈʁaɪ̯fn̩"],
+["Motor","der","[Mo]tor","ˈmoːtoːɐ̯"],
+
+// ====================================================================
+// SCHULE / LERNEN
+// ====================================================================
+["Note","die","[No]te","ˈnoːtə"],["Prüfung","die","[Prü]fung","ˈpʁyːfʊŋ"],["Wissen","das","[Wis]sen","ˈvɪsn̩"],
+["Klasse","die","[Klas]se","ˈklasə"],["Kurs","der","[Kurs]","kʊʁs"],["Studium","das","[Stu]dium","ˈʃtuːdi̯ʊm"],
+["Universität","die","Universi[tät]","univɛʁziˈtɛːt"],["Bibliothek","die","Biblio[thek]","biblioˈteːk"],["Fach","das","[Fach]","fax"],
+["Unterricht","der","[Un]terricht","ˈʊntɐʁɪçt"],["Bleistift","der","[Blei]stift","ˈblaɪ̯ʃtɪft"],["Lineal","das","Line[al]","lineˈaːl"],
+["Schreibtisch","der","[Schreib]tisch","ˈʃʁaɪ̯ptɪʃ"],
+
+// ====================================================================
+// MATERIAL / STOFF / DINGE (knifflige Genera)
+// ====================================================================
+["Stoff","der","[Stoff]","ʃtɔf"],["Draht","der","[Draht]","dʁaːt"],["Faden","der","[Fa]den","ˈfaːdn̩"],
+["Stab","der","[Stab]","ʃtaːp"],["Balken","der","[Bal]ken","ˈbalkn̩"],["Zweig","der","[Zweig]","tsvaɪ̯k"],
+["Kern","der","[Kern]","kɛʁn"],["Holz","das","[Holz]","hɔlts"],["Leder","das","[Le]der","ˈleːdɐ"],
+["Tuch","das","[Tuch]","tuːx"],["Gold","das","[Gold]","ɡɔlt"],["Silber","das","[Sil]ber","ˈzɪlbɐ"],
+["Eisen","das","[Ei]sen","ˈaɪ̯zn̩"],["Kupfer","das","[Kup]fer","ˈkʊpfɐ"],["Metall","das","Me[tall]","meˈtal"],
+["Blei","das","[Blei]","blaɪ̯"],["Kabel","das","[Ka]bel","ˈkaːbl̩"],["Brett","das","[Brett]","bʁɛt"],
+["Seil","das","[Seil]","zaɪ̯l"],["Netz","das","[Netz]","nɛts"],["Rohr","das","[Rohr]","ʁoːɐ̯"],
+["Fass","das","[Fass]","fas"],["Wolle","die","[Wol]le","ˈvɔlə"],["Seide","die","[Sei]de","ˈzaɪ̯də"],
+["Baumwolle","die","[Baum]wolle","ˈbaʊ̯mvɔlə"],["Garn","das","[Garn]","ɡaʁn"],["Naht","die","[Naht]","naːt"],
+["Falte","die","[Fal]te","ˈfaltə"],["Mappe","die","[Map]pe","ˈmapə"],["Klinge","die","[Klin]ge","ˈklɪŋə"],
+["Säge","die","[Sä]ge","ˈzɛːɡə"],["Zange","die","[Zan]ge","ˈtsaŋə"],["Schraube","die","[Schrau]be","ˈʃʁaʊ̯bə"],
+["Leiter","die","[Lei]ter","ˈlaɪ̯tɐ"],["Schalter","der","[Schal]ter","ˈʃaltɐ"],["Stecker","der","[Ste]cker","ˈʃtɛkɐ"],
+["Akku","der","[Ak]ku","ˈaku"],["Bildschirm","der","[Bild]schirm","ˈbɪltʃɪʁm"],
+
+// ====================================================================
+// BEWEGUNG / HANDLUNG (einsilbige der-Wörter)
+// ====================================================================
+["Schritt","der","[Schritt]","ʃʁɪt"],["Sprung","der","[Sprung]","ʃpʁʊŋ"],["Lauf","der","[Lauf]","laʊ̯f"],
+["Schlag","der","[Schlag]","ʃlaːk"],["Stoß","der","[Stoß]","ʃtoːs"],["Druck","der","[Druck]","dʁʊk"],
+["Griff","der","[Griff]","ɡʁɪf"],["Wurf","der","[Wurf]","vʊʁf"],["Biss","der","[Biss]","bɪs"],
+["Kuss","der","[Kuss]","kʊs"],["Schrei","der","[Schrei]","ʃʁaɪ̯"],["Blick","der","[Blick]","blɪk"],
+
+// ====================================================================
+// GEFÜHL / GEIST (gemischt)
+// ====================================================================
+["Schmerz","der","[Schmerz]","ʃmɛʁts"],["Zorn","der","[Zorn]","tsɔʁn"],["Neid","der","[Neid]","naɪ̯t"],
+["Stolz","der","[Stolz]","ʃtɔlts"],["Dank","der","[Dank]","daŋk"],["Lust","die","[Lust]","lʊst"],
+["Wut","die","[Wut]","vuːt"],["Trauer","die","[Trau]er","ˈtʁaʊ̯ɐ"],["Scham","die","[Scham]","ʃaːm"],
+["Furcht","die","[Furcht]","fʊʁçt"],["Gier","die","[Gier]","ɡiːɐ̯"],["Treue","die","[Treu]e","ˈtʁɔɪ̯ə"],
+["Ehre","die","[Eh]re","ˈeːʁə"],["Würde","die","[Wür]de","ˈvʏʁdə"],["Seele","die","[See]le","ˈzeːlə"],
+["Sorge","die","[Sor]ge","ˈzɔʁɡə"],["Wille","der","[Wil]le","ˈvɪlə"],["Zweifel","der","[Zwei]fel","ˈtsvaɪ̯fl̩"],
+["Verstand","der","Ver[stand]","fɛɐ̯ˈʃtant"],["Vernunft","die","Ver[nunft]","fɛɐ̯ˈnʊnft"],["Gefühl","das","Ge[fühl]","ɡəˈfyːl"],
+["Gewissen","das","Ge[wis]sen","ɡəˈvɪsn̩"],["Geheimnis","das","Ge[heim]nis","ɡəˈhaɪ̯mnɪs"],["Bedürfnis","das","Be[dürf]nis","bəˈdʏʁfnɪs"],
+["Wunder","das","[Wun]der","ˈvʊndɐ"],["Rätsel","das","[Rät]sel","ˈʁɛːtsl̩"],["Schicksal","das","[Schick]sal","ˈʃɪkzaːl"],
+
+// ====================================================================
+// KONFLIKT / GESELLSCHAFT
+// ====================================================================
+["Streit","der","[Streit]","ʃtʁaɪ̯t"],["Krieg","der","[Krieg]","kʁiːk"],["Frieden","der","[Frie]den","ˈfʁiːdn̩"],
+["Sieg","der","[Sieg]","ziːk"],["Kampf","der","[Kampf]","kampf"],["Mord","der","[Mord]","mɔʁt"],
+["Dieb","der","[Dieb]","diːp"],["Schatz","der","[Schatz]","ʃats"],["Recht","das","[Recht]","ʁɛçt"],
+["Gesetz","das","Ge[setz]","ɡəˈzɛts"],["Urteil","das","[Ur]teil","ˈuːɐ̯taɪ̯l"],["Amt","das","[Amt]","amt"],
+["Volk","das","[Volk]","fɔlk"],["Heer","das","[Heer]","heːɐ̯"],["Schwert","das","[Schwert]","ʃveːɐ̯t"],
+["Gift","das","[Gift]","ɡɪft"],["Welt","die","[Welt]","vɛlt"],["Heimat","die","[Hei]mat","ˈhaɪ̯maːt"],
+["Burg","die","[Burg]","bʊʁk"],["Tat","die","[Tat]","taːt"],["Pflicht","die","[Pflicht]","pflɪçt"],
+["Schuld","die","[Schuld]","ʃʊlt"],["Wahl","die","[Wahl]","vaːl"],
+
+// ====================================================================
+// PLAN / WIRTSCHAFT / WERT
+// ====================================================================
+["Rat","der","[Rat]","ʁaːt"],["Plan","der","[Plan]","plaːn"],["Zweck","der","[Zweck]","tsvɛk"],
+["Wert","der","[Wert]","veːɐ̯t"],["Vorteil","der","[Vor]teil","ˈfoːɐ̯taɪ̯l"],["Nachteil","der","[Nach]teil","ˈnaːxtaɪ̯l"],
+["Unterschied","der","[Un]terschied","ˈʊntɐʃiːt"],["Zufall","der","[Zu]fall","ˈtsuːfal"],["Erfolg","der","Er[folg]","ɛɐ̯ˈfɔlk"],
+["Versuch","der","Ver[such]","fɛɐ̯ˈzuːx"],["Befehl","der","Be[fehl]","bəˈfeːl"],["Beweis","der","Be[weis]","bəˈvaɪ̯s"],
+["Handel","der","[Han]del","ˈhandl̩"],["Kredit","der","Kre[dit]","kʁeˈdiːt"],["Zins","der","[Zins]","tsɪns"],
+["Scheck","der","[Scheck]","ʃɛk"],["Schein","der","[Schein]","ʃaɪ̯n"],["Cent","der","[Cent]","sɛnt"],
+["Euro","der","[Eu]ro","ˈɔɪ̯ʁo"],["Münze","die","[Mün]ze","ˈmʏntsə"],["Werk","das","[Werk]","vɛʁk"],
+["Ergebnis","das","Er[geb]nis","ɛɐ̯ˈɡeːpnɪs"],["Ereignis","das","Er[eig]nis","ɛɐ̯ˈʔaɪ̯knɪs"],["Erlebnis","das","Er[leb]nis","ɛɐ̯ˈleːpnɪs"],
+["Verständnis","das","Ver[ständ]nis","fɛɐ̯ˈʃtɛntnɪs"],["Gewicht","das","Ge[wicht]","ɡəˈvɪçt"],
+
+// ====================================================================
+// FORM / RAUM / MASS
+// ====================================================================
+["Form","die","[Form]","fɔʁm"],["Ecke","die","[E]cke","ˈɛkə"],["Reihe","die","[Rei]he","ˈʁaɪ̯ə"],
+["Seite","die","[Sei]te","ˈzaɪ̯tə"],["Spitze","die","[Spit]ze","ˈʃpɪtsə"],["Fläche","die","[Flä]che","ˈflɛçə"],
+["Linie","die","[Li]nie","ˈliːni̯ə"],["Größe","die","[Grö]ße","ˈɡʁøːsə"],["Länge","die","[Län]ge","ˈlɛŋə"],
+["Breite","die","[Brei]te","ˈbʁaɪ̯tə"],["Höhe","die","[Hö]he","ˈhøːə"],["Tiefe","die","[Tie]fe","ˈtiːfə"],
+["Maß","das","[Maß]","maːs"],["Paar","das","[Paar]","paːɐ̯"],["Dutzend","das","[Dut]zend","ˈdʊtsn̩t"],
+["Drittel","das","[Drit]tel","ˈdʁɪtl̩"],["Viertel","das","[Vier]tel","ˈfɪʁtl̩"],["Stück","das","[Stück]","ʃtʏk"],
+["Paket","das","Pa[ket]","paˈkeːt"],["Tor","das","[Tor]","toːɐ̯"],["Schloss","das","[Schloss]","ʃlɔs"],
+
+// ====================================================================
+// NATUR / LANDSCHAFT
+// ====================================================================
+["Dampf","der","[Dampf]","dampf"],["Rauch","der","[Rauch]","ʁaʊ̯x"],["Staub","der","[Staub]","ʃtaʊ̯p"],
+["Schlamm","der","[Schlamm]","ʃlam"],["Lehm","der","[Lehm]","leːm"],["Ton","der","[Ton]","toːn"],
+["Hagel","der","[Ha]gel","ˈhaːɡl̩"],["Gipfel","der","[Gip]fel","ˈɡɪpfl̩"],["Felsen","der","[Fel]sen","ˈfɛlzn̩"],
+["Strauch","der","[Strauch]","ʃtʁaʊ̯x"],["Busch","der","[Busch]","bʊʃ"],["Stamm","der","[Stamm]","ʃtam"],
+["Bach","der","[Bach]","bax"],["Sumpf","der","[Sumpf]","zʊmpf"],["Wüste","die","[Wüs]te","ˈvyːstə"],
+["Glut","die","[Glut]","ɡluːt"],["Flamme","die","[Flam]me","ˈflamə"],["Asche","die","[A]sche","ˈaʃə"],
+["Kohle","die","[Koh]le","ˈkoːlə"],["Ernte","die","[Ern]te","ˈɛʁntə"],["Saat","die","[Saat]","zaːt"],
+["Frucht","die","[Frucht]","fʁʊxt"],["Knospe","die","[Knos]pe","ˈknɔspə"],["Rinde","die","[Rin]de","ˈʁɪndə"],
+["Korn","das","[Korn]","kɔʁn"],["Stroh","das","[Stroh]","ʃtʁoː"],["Heu","das","[Heu]","hɔɪ̯"],
+["Laub","das","[Laub]","laʊ̯p"],["Moos","das","[Moos]","moːs"],["Ufer","das","[U]fer","ˈuːfɐ"],
+["Gebirge","das","Ge[bir]ge","ɡəˈbɪʁɡə"],["Segel","das","[Se]gel","ˈzeːɡl̩"],["Ruder","das","[Ru]der","ˈʁuːdɐ"],
+["Schornstein","der","[Schorn]stein","ˈʃɔʁnʃtaɪ̯n"],
+
+// ====================================================================
+// MENSCHEN II
+// ====================================================================
+["Junge","der","[Jun]ge","ˈjʊŋə"],["Enkel","der","[En]kel","ˈɛŋkl̩"],["Enkelin","die","[En]kelin","ˈɛŋkəlɪn"],
+["Zwilling","der","[Zwil]ling","ˈtsvɪlɪŋ"],["Bauer","der","[Bau]er","ˈbaʊ̯ɐ"],["Jäger","der","[Jä]ger","ˈjɛːɡɐ"],
+["Fischer","der","[Fi]scher","ˈfɪʃɐ"],["Wirt","der","[Wirt]","vɪʁt"],["Friseur","der","Fri[seur]","fʁiˈzøːɐ̯"],
+["Schneider","der","[Schnei]der","ˈʃnaɪ̯dɐ"],["Schmied","der","[Schmied]","ʃmiːt"],["Krankenschwester","die","[Kran]kenschwester","ˈkʁaŋkn̩ʃvɛstɐ"],
+["Zwerg","der","[Zwerg]","tsvɛʁk"],["Riese","der","[Rie]se","ˈʁiːzə"],["Hexe","die","[He]xe","ˈhɛksə"],
+["Geist","der","[Geist]","ɡaɪ̯st"],["Engel","der","[En]gel","ˈɛŋl̩"],["Teufel","der","[Teu]fel","ˈtɔɪ̯fl̩"],
+
+// ====================================================================
+// KÖRPER II
+// ====================================================================
+["Ferse","die","[Fer]se","ˈfɛʁzə"],["Knöchel","der","[Knö]chel","ˈknœçl̩"],["Wade","die","[Wa]de","ˈvaːdə"],
+["Hüfte","die","[Hüf]te","ˈhʏftə"],["Nabel","der","[Na]bel","ˈnaːbl̩"],["Rippe","die","[Rip]pe","ˈʁɪpə"],
+["Nacken","der","[Na]cken","ˈnakn̩"],["Faust","die","[Faust]","faʊ̯st"],["Ellbogen","der","[Ell]bogen","ˈɛlboːɡn̩"],
+["Träne","die","[Trä]ne","ˈtʁɛːnə"],["Schweiß","der","[Schweiß]","ʃvaɪ̯s"],["Atem","der","[A]tem","ˈaːtəm"],
+["Puls","der","[Puls]","pʊls"],
+
+// ====================================================================
+// ESSEN / TRINKEN II
+// ====================================================================
+["Knoblauch","der","[Knob]lauch","ˈknoːplaʊ̯x"],["Lauch","der","[Lauch]","laʊ̯x"],["Spargel","der","[Spar]gel","ˈʃpaʁɡl̩"],
+["Kürbis","der","[Kür]bis","ˈkʏʁbɪs"],["Melone","die","Me[lo]ne","meˈloːnə"],["Ananas","die","[A]nanas","ˈananas"],
+["Aprikose","die","Apri[ko]se","apʁiˈkoːzə"],["Pflaume","die","[Pflau]me","ˈpflaʊ̯mə"],["Pfirsich","der","[Pfir]sich","ˈpfɪʁzɪç"],
+["Himbeere","die","[Him]beere","ˈhɪmbeːʁə"],["Brombeere","die","[Brom]beere","ˈbʁɔmbeːʁə"],["Keks","der","[Keks]","keːks"],
+["Torte","die","[Tor]te","ˈtɔʁtə"],["Pudding","der","[Pud]ding","ˈpʊdɪŋ"],["Sirup","der","[Si]rup","ˈziːʁʊp"],
+["Bonbon","das","Bon[bon]","bɔŋˈbɔŋ"],["Praline","die","Pra[li]ne","pʁaˈliːnə"],["Teig","der","[Teig]","taɪ̯k"],
+["Zutat","die","[Zu]tat","ˈtsuːtaːt"],["Mahlzeit","die","[Mahl]zeit","ˈmaːltsaɪ̯t"],["Geschmack","der","Ge[schmack]","ɡəˈʃmak"],
+["Durst","der","[Durst]","dʊʁst"],["Hunger","der","[Hun]ger","ˈhʊŋɐ"],["Appetit","der","Appe[tit]","apeˈtiːt"],
+
+// ====================================================================
+// HAUSHALT II
+// ====================================================================
+["Schublade","die","[Schub]lade","ˈʃuːplaːdə"],["Steckdose","die","[Steck]dose","ˈʃtɛkdoːzə"],["Glühbirne","die","[Glüh]birne","ˈɡlyːbɪʁnə"],
+["Wasserhahn","der","[Was]serhahn","ˈvasɐhaːn"],["Waschbecken","das","[Wasch]becken","ˈvaʃbɛkn̩"],["Badewanne","die","[Ba]dewanne","ˈbaːdəvanə"],
+["Schwamm","der","[Schwamm]","ʃvam"],["Seife","die","[Sei]fe","ˈzaɪ̯fə"],["Handtuch","das","[Hand]tuch","ˈhanttuːx"],
+["Zahnbürste","die","[Zahn]bürste","ˈtsaːnbʏʁstə"],["Kamm","der","[Kamm]","kam"],["Vase","die","[Va]se","ˈvaːzə"],
+["Rahmen","der","[Rah]men","ˈʁaːmən"],["Schachtel","die","[Schach]tel","ˈʃaxtl̩"],["Deckel","der","[De]ckel","ˈdɛkl̩"],
+["Korb","der","[Korb]","kɔʁp"],["Tüte","die","[Tü]te","ˈtyːtə"],
+
+// ====================================================================
+// NATUR / TIERE II
+// ====================================================================
+["Tropfen","der","[Trop]fen","ˈtʁɔpfn̩"],["Pfütze","die","[Pfüt]ze","ˈpfʏtsə"],["Schauer","der","[Schau]er","ˈʃaʊ̯ɐ"],
+["Regenbogen","der","[Re]genbogen","ˈʁeːɡn̩boːɡn̩"],["Lawine","die","La[wi]ne","laˈviːnə"],["Vulkan","der","Vul[kan]","vʊlˈkaːn"],
+["Ebbe","die","[Eb]be","ˈɛbə"],["Flut","die","[Flut]","fluːt"],["Reh","das","[Reh]","ʁeː"],
+["Hirsch","der","[Hirsch]","hɪʁʃ"],["Hase","der","[Ha]se","ˈhaːzə"],["Eichhörnchen","das","[Eich]hörnchen","ˈaɪ̯çhœʁnçən"],
+["Möwe","die","[Mö]we","ˈmøːvə"],["Specht","der","[Specht]","ʃpɛçt"],["Taube","die","[Tau]be","ˈtaʊ̯bə"],
+["Schwan","der","[Schwan]","ʃvaːn"],["Storch","der","[Storch]","ʃtɔʁç"],["Adler","der","[Ad]ler","ˈaːdlɐ"],
+["Wal","der","[Wal]","vaːl"],["Delfin","der","Del[fin]","dɛlˈfiːn"],["Hai","der","[Hai]","haɪ̯"],
+["Krabbe","die","[Krab]be","ˈkʁabə"],["Muschel","die","[Mu]schel","ˈmʊʃl̩"],["Krebs","der","[Krebs]","kʁeːps"],
+["Qualle","die","[Qual]le","ˈkvalə"],
+
+// ====================================================================
+// ABSTRAKT / ZEIT II
+// ====================================================================
+["Augenblick","der","[Au]genblick","ˈaʊ̯ɡn̩blɪk"],["Gegenwart","die","[Ge]genwart","ˈɡeːɡn̩vaʁt"],["Zukunft","die","[Zu]kunft","ˈtsuːkʊnft"],
+["Anlass","der","[An]lass","ˈanlas"],["Zustand","der","[Zu]stand","ˈtsuːʃtant"],["Vorgang","der","[Vor]gang","ˈfoːɐ̯ɡaŋ"],
+["Ablauf","der","[Ab]lauf","ˈaplaʊ̯f"],["Verlauf","der","Ver[lauf]","fɛɐ̯ˈlaʊ̯f"],["Bereich","der","Be[reich]","bəˈʁaɪ̯ç"],
+["Inhalt","der","[In]halt","ˈɪnhalt"],["Umfang","der","[Um]fang","ˈʊmfaŋ"],["Folge","die","[Fol]ge","ˈfɔlɡə"],
+["Ursache","die","[Ur]sache","ˈuːɐ̯zaxə"],["Einfluss","der","[Ein]fluss","ˈaɪ̯nflʊs"],["Vorschlag","der","[Vor]schlag","ˈfoːɐ̯ʃlaːk"],
+
+// ====================================================================
+// ARBEIT / WIRTSCHAFT II
+// ====================================================================
+["Lebenslauf","der","[Le]benslauf","ˈleːbn̩slaʊ̯f"],["Arbeitgeber","der","[Ar]beitgeber","ˈaʁbaɪ̯tɡeːbɐ"],["Arbeitnehmer","der","[Ar]beitnehmer","ˈaʁbaɪ̯tneːmɐ"],
+["Branche","die","[Bran]che","ˈbʁãːʃə"],["Wettbewerb","der","[Wett]bewerb","ˈvɛtbəvɛʁp"],["Konkurrent","der","Konkur[rent]","kɔŋkuˈʁɛnt"],
+["Strategie","die","Strate[gie]","ʃtʁateˈɡiː"],["Konzept","das","Kon[zept]","kɔnˈtsɛpt"],["Bilanz","die","Bi[lanz]","biˈlants"],
+["Aktie","die","[Ak]tie","ˈaktsi̯ə"],["Anteil","der","[An]teil","ˈantaɪ̯l"],["Vorstand","der","[Vor]stand","ˈfoːɐ̯ʃtant"],
+["Geschäftsführer","der","Ge[schäfts]führer","ɡəˈʃɛftsfyːʁɐ"],["Sekretärin","die","Sekre[tä]rin","zekʁeˈtɛːʁɪn"],["Notiz","die","No[tiz]","noˈtiːts"],
+["Stempel","der","[Stem]pel","ˈʃtɛmpl̩"],["Umschlag","der","[Um]schlag","ˈʊmʃlaːk"],["Briefmarke","die","[Brief]marke","ˈbʁiːfmaʁkə"],
+["Formular","das","Formu[lar]","fɔʁmuˈlaːɐ̯"],["Unterlage","die","[Un]terlage","ˈʊntɐlaːɡə"],["Ausdruck","der","[Aus]druck","ˈaʊ̯sdʁʊk"],
+["Tabelle","die","Ta[bel]le","taˈbɛlə"],["Grafik","die","[Gra]fik","ˈɡʁaːfɪk"],["Protokoll","das","Proto[koll]","pʁotoˈkɔl"],
+
+// ====================================================================
+// ORTE / WEGE II
+// ====================================================================
+["Ausflug","der","[Aus]flug","ˈaʊ̯sfluːk"],["Unterkunft","die","[Un]terkunft","ˈʊntɐkʊnft"],["Eintritt","der","[Ein]tritt","ˈaɪ̯ntʁɪt"],
+["Ausgang","der","[Aus]gang","ˈaʊ̯sɡaŋ"],["Eingang","der","[Ein]gang","ˈaɪ̯nɡaŋ"],["Aufzug","der","[Auf]zug","ˈaʊ̯ftsuːk"],
+["Rolltreppe","die","[Roll]treppe","ˈʁɔltʁɛpə"],["Flur","der","[Flur]","fluːɐ̯"],["Gang","der","[Gang]","ɡaŋ"],
+["Stockwerk","das","[Stock]werk","ˈʃtɔkvɛʁk"],["Etage","die","E[ta]ge","eˈtaːʒə"]
+];
+
+const WORDS = RAW.map(([w,g,d,ipa])=>({w,g,d,ipa}));
+
+/* ============================================================
+   ZUSTAND + SPACED REPETITION (Leitner-Variante)
+   Fortschritt wird pro Wort gespeichert (nach Wort-Name, nicht
+   nach Position). Neue Wörter löschen alten Fortschritt daher
+   nicht mehr.
+   ============================================================ */
+const KEY = "der-die-das-progress-v3";
+const MASTER_BOX = 3;          // ab 3x korrekt (und schnell) hintereinander = gemeistert
+const SLOW_MS = 5000;          // über 5 s Bedenkzeit -> Problemwort
+const BOX_WEIGHT = [12, 7, 4, 2, 1, .4];
+const DUE_GAP    = [0, 3, 6, 12, 24, 48];
+
+let state = {};
+let step = 0, streak = 0, best = 0;
+let lastIdx = -1, curIdx = -1, locked = false, storageMode = "memory";
+let focusMode = false, pendingAdvance = false;
+let soundOn = false, canSpeak = false, awaiting = false;
+
+/* --- Sichtbarkeits- und panelbewusste Zeitmessung ---------------------
+   Zählt nur die Zeit, in der das Wort wirklich sichtbar ist. Wenn die
+   Serie in den Vordergrund geholt oder die Liste geöffnet wird, pausiert
+   die Uhr, damit nichts fälschlich als "zu langsam" markiert wird. */
+let tStart = 0, tAcc = 0, timing = false;
+function timerStart(){ tAcc = 0; tStart = Date.now(); timing = true; }
+function timerElapsed(){ return tAcc + ((timing && !document.hidden) ? Date.now()-tStart : 0); }
+function pauseTimer(){ if(timing && !document.hidden) tAcc += Date.now()-tStart; timing = false; }
+function resumeTimer(){ if(!locked){ tStart = Date.now(); timing = true; } }
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) pauseTimer();
+  else if(!locked && !anyOverlay()) resumeTimer();
+});
+
+const $ = id => document.getElementById(id);
+const wordEl=$("word"), ipaEl=$("ipa"), fbEl=$("feedback"), choicesEl=$("choices");
+const choiceBtns=[...choicesEl.querySelectorAll(".choice")];
+
+function ensureState(){
+  for(const it of WORDS){
+    let s = state[it.w];
+    if(!s){ state[it.w] = {b:0,due:0,c:0,x:0,slow:0}; continue; }
+    if(s.b===undefined)s.b=0; if(s.due===undefined)s.due=0;
+    if(s.c===undefined)s.c=0; if(s.x===undefined)s.x=0; if(s.slow===undefined)s.slow=0;
+  }
+}
+function st(i){ return state[WORDS[i].w]; }
+
+/* Problemwort = schon mal falsch geraten ODER zu langsam, und noch
+   nicht gemeistert. Sobald es mehrfach schnell richtig war, fällt es raus. */
+function isProblem(s){ return (s.x>0 || s.slow>0) && s.b < MASTER_BOX; }
+function problemIdxs(){ return WORDS.map((_,i)=>i).filter(i=>isProblem(st(i))); }
+
+function detectStorage(){
+  if(typeof window.storage === "object" && window.storage !== null) return "claude";
+  try{ const t="__ddd_t"; window.localStorage.setItem(t,"1"); window.localStorage.removeItem(t); return "local"; }
+  catch(e){ return "memory"; }
+}
+async function load(){
+  storageMode = detectStorage();
+  try{
+    let raw = null;
+    if(storageMode==="claude"){ const r = await window.storage.get(KEY, false); raw = r && r.value; }
+    else if(storageMode==="local"){ raw = window.localStorage.getItem(KEY); }
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && d.state && typeof d.state==="object"){
+        state=d.state; step=d.step||0; streak=d.streak||0; best=d.best||0;
+      }
+    }
+  }catch(e){ /* erster Start */ }
+  ensureState();
+}
+async function save(){
+  try{
+    const json = JSON.stringify({state,step,streak,best});
+    if(storageMode==="claude") await window.storage.set(KEY, json, false);
+    else if(storageMode==="local") window.localStorage.setItem(KEY, json);
+  }catch(e){}
+}
+
+function masteredCount(){ return WORDS.filter(it=>state[it.w].b>=MASTER_BOX).length; }
+function learnedCount(){ return WORDS.filter(it=>state[it.w].c>0).length; }
+
+function pickNext(){
+  let idxs = WORDS.map((_,i)=>i);
+  if(focusMode){
+    const p = problemIdxs().filter(i=>i!==lastIdx);
+    if(p.length) idxs = p;                       // im Fokus-Modus nur Problemwörter
+  }
+  let due = idxs.filter(i => st(i).due <= step && i !== lastIdx);
+  if(due.length){
+    const minBox = Math.min(...due.map(i=>st(i).b));
+    const urgent = due.filter(i=>st(i).b===minBox);
+    return urgent[Math.floor(Math.random()*urgent.length)];
+  }
+  const pool = idxs.filter(i=>i!==lastIdx);
+  if(!pool.length) return (lastIdx>=0?lastIdx:0);
+  let totalW=0;
+  const weights = pool.map(i=>{ const s=st(i); let w=(BOX_WEIGHT[s.b]||.3)*(1 + s.x + s.slow*0.7); totalW+=w; return w; });
+  let r=Math.random()*totalW;
+  for(let k=0;k<pool.length;k++){ r-=weights[k]; if(r<=0) return pool[k]; }
+  return pool[pool.length-1];
+}
+
+/* Merkhilfe aus der Endung ableiten. Nur verlässliche Regeln werden als
+   sicher angesagt; Ausnahmen werden ehrlich als solche markiert. */
+function genderHint(it){
+  const lw = it.w.toLowerCase(), g = it.g;
+  const noUng  = ["sprung","schwung","ursprung","dung"];
+  const noChen = ["kuchen","knochen","drachen","rachen"];
+  const noIst  = ["frist"];
+  const rules = [
+    ["chen","das","Verkleinerung auf -chen ist immer das", noChen],
+    ["lein","das","Verkleinerung auf -lein ist immer das", []],
+    ["schaft","die","Wörter auf -schaft sind immer die", []],
+    ["heit","die","Wörter auf -heit sind immer die", []],
+    ["keit","die","Wörter auf -keit sind immer die", []],
+    ["tät","die","Wörter auf -tät sind immer die", []],
+    ["ung","die","Wörter auf -ung sind immer die", noUng],
+    ["ion","die","Wörter auf -ion sind meist die", []],
+    ["enz","die","Wörter auf -enz sind die", []],
+    ["ik","die","Wörter auf -ik sind meist die", []],
+    ["eur","der","Wörter auf -eur sind meist der", []],
+    ["ur","die","Wörter auf -ur sind meist die", []],
+    ["ling","der","Wörter auf -ling sind immer der", []],
+    ["ismus","der","Wörter auf -ismus sind immer der", []],
+    ["ist","der","Wörter auf -ist sind meist der (Personen)", noIst],
+    ["ment","das","Wörter auf -ment sind meist das", []],
+    ["ant","der","Wörter auf -ant sind meist der", []],
+    ["ent","der","Wörter auf -ent sind meist der (Personen)", []],
+    ["or","der","Wörter auf -or sind meist der", []],
+    ["tum","das","Wörter auf -tum sind meist das (Ausnahme: der Reichtum)", []],
+    ["nis","das","Wörter auf -nis sind meist das", []],
+    ["sal","das","Wörter auf -sal sind meist das", []],
+    ["ig","der","Wörter auf -ig sind meist der", []],
+    ["ich","der","Wörter auf -ich sind meist der", []],
+    ["ie","die","Wörter auf -ie sind meist die", []]
+  ];
+  for(const [suf,rg,txt,block] of rules){
+    if(lw.endsWith(suf) && !block.includes(lw)){
+      return rg===g ? txt : `Endung -${suf} deutet auf „${rg}", hier ist es aber „${g}"`;
+    }
+  }
+  if(lw.endsWith("um") && !lw.endsWith("aum")){
+    return g==="das" ? "Wörter auf -um sind meist das" : `Endung -um deutet auf „das", hier aber „${g}"`;
+  }
+  if(lw.endsWith("e")){
+    return g==="die" ? "Wörter auf -e sind oft die" : `Endet auf -e (oft die), hier aber „${g}"`;
+  }
+  return null;
+}
+
+/* Aussprache über die Systemstimme (kann je nach Browser fehlen). */
+function speak(text){
+  try{
+    if(!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .95;
+    const de = window.speechSynthesis.getVoices().find(v=>/^de/i.test(v.lang));
+    if(de) u.voice = de;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+if("speechSynthesis" in window){ try{ window.speechSynthesis.getVoices(); }catch(e){} }
+
+function render(){
+  curIdx = pickNext(); locked=false; awaiting=false;
+  const it = WORDS[curIdx];
+  wordEl.innerHTML = it.d && it.d.includes("[") ? it.d.replace("[","<b>").replace("]","</b>") : it.w;
+  wordEl.classList.remove("in"); void wordEl.offsetWidth; wordEl.classList.add("in");
+  ipaEl.textContent = it.ipa ? "/"+it.ipa+"/" : "";
+  fbEl.innerHTML = "&nbsp;";
+  $("rule").textContent = "";
+  canSpeak = false;
+  choiceBtns.forEach(b=>{ b.disabled=false; b.className="choice"; });
+  updateHud();
+  timerStart();
+}
+function anyOverlay(){ return !!document.querySelector(".overlay.show"); }
+function advance(){ if(anyOverlay()){ pendingAdvance=true; return; } pendingAdvance=false; render(); }
+
+/* Ergebnis und Regel bleiben stehen, bis irgendwo (außer der unteren Leiste
+   oder einem offenen Panel) getippt wird. */
+function waitForTap(){
+  const cont = (e)=>{
+    if(e.target.closest(".toolbar") || e.target.closest(".overlay")) return;
+    document.removeEventListener("pointerdown", cont, true);
+    advance();
+  };
+  setTimeout(()=>document.addEventListener("pointerdown", cont, true), 180);
+}
+
+function updateHud(){
+  $("streak").textContent=streak;
+  $("mastered").textContent=learnedCount();
+  $("total").textContent=WORDS.length;
+  $("barFill").style.width=(learnedCount()/WORDS.length*100).toFixed(1)+"%";
+  const pc=problemIdxs().length, badge=$("probCount");
+  badge.textContent=pc; badge.style.display = pc ? "inline-flex" : "none";
+}
+
+function answer(pick){
+  if(locked) return;
+  const elapsed = timerElapsed(); timing=false; locked=true;
+  const slow = elapsed > SLOW_MS;
+  const it=WORDS[curIdx], correct=it.g, s=state[it.w];
+  step++; lastIdx=curIdx;
+  choiceBtns.forEach(b=>{ b.disabled=true; const a=b.dataset.a;
+    if(a===correct) b.classList.add("correct"); else if(a===pick) b.classList.add("wrong"); else b.classList.add("dim"); });
+  const wordHtml = it.d && it.d.includes("[") ? it.d.replace("[","<b>").replace("]","</b>") : it.w;
+  wordEl.innerHTML = `<span class="g g-${correct}">${correct}</span> ${wordHtml}`;
+  const hint = genderHint(it);
+  $("rule").textContent = hint || "";
+  canSpeak = true;
+  if(soundOn) speak(correct+" "+it.w);
+  if(pick===correct){
+    s.c++; streak++; if(streak>best) best=streak;
+    if(slow){
+      s.slow++; s.due=step+3;                    // richtig, aber zu langsam: Box bleibt, kommt bald wieder
+      fbEl.innerHTML = `<span class="ok">richtig</span> <span class="tap">· ${Math.round(elapsed/1000)} s, kommt öfter dran</span>`;
+    }else{
+      s.b=Math.min(5,s.b+1); s.due=step+(DUE_GAP[s.b]||1);
+      fbEl.innerHTML = `<span class="ok">richtig</span> <span class="tap">· tippen für weiter</span>`;
+    }
+  }else{
+    s.x++; s.b=0; s.due=step+2; streak=0;
+    fbEl.innerHTML = `<span class="no">falsch</span> <span class="tap">· tippen für weiter</span>`;
+  }
+  save(); updateHud(); awaiting=true; waitForTap();
+}
+
+choiceBtns.forEach(b=> b.addEventListener("click",()=>answer(b.dataset.a)) );
+document.addEventListener("keydown", e=>{
+  if(anyOverlay()) return;
+  if(awaiting){ if(e.key==="Enter"||e.key===" "||e.key==="ArrowRight"){ e.preventDefault(); advance(); } return; }
+  const m={"1":"der","2":"die","3":"das"}; if(m[e.key]) answer(m[e.key]);
+});
+
+$("soundBtn").addEventListener("click",()=>{
+  soundOn=!soundOn;
+  $("soundIcon").textContent = soundOn ? "🔊" : "🔈";
+  $("soundBtn").classList.toggle("on",soundOn);
+  if(soundOn && canSpeak) speak(WORDS[curIdx].g+" "+WORDS[curIdx].w);
+});
+
+/* -------- Problem-Liste (Panel) -------- */
+function listOpen(){ return $("listOverlay").classList.contains("show"); }
+function renderList(){
+  const items = problemIdxs().sort((a,b)=>{
+    const sa=st(a), sb=st(b);
+    if(sa.b!==sb.b) return sa.b-sb.b;                 // niedrigste Box (schwächste) zuerst
+    return (sb.x+sb.slow)-(sa.x+sa.slow);             // dann die mit den meisten Fehlern
+  });
+  $("probTitle").textContent = `Problemwörter (${items.length})`;
+  const wrap=$("probList");
+  if(!items.length){
+    wrap.innerHTML = `<div class="empty">Noch keine Problemwörter.<br>Falsch geratene oder über 5 Sekunden gezögerte Wörter erscheinen hier und werden öfter abgefragt.</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(i=>{
+    const it=WORDS[i], s=st(i);
+    const dots=[0,1,2].map(k=>`<span class="dot${s.b>k?' on':''}"></span>`).join("");
+    let tags="";
+    if(s.x>0) tags+=`<span class="tag x">✗ ${s.x}</span>`;
+    if(s.slow>0) tags+=`<span class="tag s">⏱ ${s.slow}</span>`;
+    return `<div class="prow"><div class="pmain"><span class="art ${it.g}">${it.g}</span> <span class="pw">${it.w}</span>${it.ipa?` <span class="pipa">/${it.ipa}/</span>`:""}</div><div class="pmeta">${tags}<span class="dots">${dots}</span></div></div>`;
+  }).join("");
+}
+function openList(){ pauseTimer(); renderList(); $("listOverlay").classList.add("show"); }
+function closeList(){ $("listOverlay").classList.remove("show"); if(!anyOverlay()){ if(pendingAdvance) advance(); else resumeTimer(); } }
+
+$("listBtn").addEventListener("click", openList);
+$("closeList").addEventListener("click", closeList);
+$("listOverlay").addEventListener("click", e=>{ if(e.target===$("listOverlay")) closeList(); });
+$("focusToggle").addEventListener("click",()=>{
+  focusMode=!focusMode;
+  $("focusToggle").classList.toggle("on",focusMode);
+  $("focusToggle").textContent = focusMode ? "Fokus aktiv ✓" : "Nur diese üben";
+});
+
+/* -------- Regel-Übersicht (Panel) -------- */
+function openRules(){ pauseTimer(); $("rulesOverlay").classList.add("show"); }
+function closeRules(){ $("rulesOverlay").classList.remove("show"); if(!anyOverlay()){ if(pendingAdvance) advance(); else resumeTimer(); } }
+$("rulesBtn").addEventListener("click", openRules);
+$("closeRules").addEventListener("click", closeRules);
+$("rulesOverlay").addEventListener("click", e=>{ if(e.target===$("rulesOverlay")) closeRules(); });
+
+/* -------- Reset -------- */
+$("resetBtn").addEventListener("click",()=>{ pauseTimer(); $("overlay").classList.add("show"); });
+$("cancelReset").addEventListener("click",()=>{ $("overlay").classList.remove("show"); resumeTimer(); });
+$("confirmReset").addEventListener("click",async()=>{ state={}; step=0; streak=0; best=0; focusMode=false; $("focusToggle").classList.remove("on"); $("focusToggle").textContent="Nur diese üben"; ensureState(); await save(); $("overlay").classList.remove("show"); render(); });
+
+(async function init(){ await load(); render(); })();
+</script>
+</body>
+</html>
